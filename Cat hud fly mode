@@ -1,0 +1,37 @@
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local root = character:WaitForChild("HumanoidRootPart")
+
+local flying = false
+local speed = 50
+local bv
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+
+	if input.KeyCode == Enum.KeyCode.F then
+		flying = not flying
+
+		if flying then
+			bv = Instance.new("BodyVelocity")
+			bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+			bv.Parent = root
+
+			humanoid.PlatformStand = true
+
+			RunService:BindToRenderStep("Fly", Enum.RenderPriority.Character.Value, function()
+				bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * speed
+			end)
+		else
+			RunService:UnbindFromRenderStep("Fly")
+			if bv then
+				bv:Destroy()
+			end
+			humanoid.PlatformStand = false
+		end
+	end
+end)
